@@ -1216,7 +1216,7 @@ def _cleanup_single_line(input_str):
 # %% Expand wildcards in file list
 
 
-def expand_file_list(input_files):
+def expand_file_list(input_files, file_recursive):
     """Find all files in list (expanding wildcards)
 
     This function uses `glob` to find files matching each string in the input
@@ -1227,6 +1227,8 @@ def expand_file_list(input_files):
     input_files : list(str)
         List of strings representing file names and possibly including
         wildcards
+    file_recursive: bool
+        When True, it recursively searches files under all subdirectories of the current directory
 
     Returns
     -------
@@ -1236,7 +1238,7 @@ def expand_file_list(input_files):
     """
     file_list = []
     for input_file in input_files:
-        file_list += glob.glob(input_file)
+        file_list += glob.glob(input_file, recursive=file_recursive)
     return file_list
 
 def wrap_namespace(input_str, namespace):
@@ -1262,7 +1264,7 @@ def wrap_namespace(input_str, namespace):
 # %% Main function
 
 
-def CreatePlantUMLFile(file_list, output_file=None, **diagram_kwargs):
+def CreatePlantUMLFile(file_list, file_recursive=False, output_file=None, **diagram_kwargs):
     """Create PlantUML file from list of header files
 
     This function parses a list of C++ header files and generates a file for
@@ -1273,6 +1275,8 @@ def CreatePlantUMLFile(file_list, output_file=None, **diagram_kwargs):
     file_list : list(str)
         List of filenames (possibly, with wildcards resolved with the
         :func:`expand_file_list` function)
+    file_recursive: bool
+        When True, it recursively searches files under all subdirectories of the current directory
     output_file : str
         Name of the output file
     diagram_kwargs : dict
@@ -1283,7 +1287,8 @@ def CreatePlantUMLFile(file_list, output_file=None, **diagram_kwargs):
     else:
         file_list_c = file_list
     diag = Diagram(**diagram_kwargs)
-    diag.create_from_file_list(list(set(expand_file_list(file_list_c))))
+    diag.create_from_file_list(
+        list(set(expand_file_list(file_list_c, file_recursive))))
     diag_render = diag.render()
 
     if output_file is None:
@@ -1308,6 +1313,9 @@ def main():
                         action='append', metavar='HEADER-FILE', required=True,
                         help='input file (must be quoted' +
                         ' when using wildcards)')
+    parser.add_argument('-r', '--recursive', dest='recursive',
+                        action='store_true', required=False, default=False,
+                        help='Allow to searching recursively for files in subdirectories')
     parser.add_argument('-o', '--output-file', dest='output_file',
                         required=False, default=None, metavar='FILE',
                         help='output file')
@@ -1322,7 +1330,7 @@ def main():
                         version='%(prog)s ' + '0.6')
     args = parser.parse_args()
     if len(args.input_files) > 0:
-        CreatePlantUMLFile(args.input_files, args.output_file,
+        CreatePlantUMLFile(args.input_files, args.recursive, args.output_file,
                            template_file=args.template_file,
                            flag_dep=args.flag_dep)
 

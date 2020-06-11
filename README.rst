@@ -54,6 +54,7 @@ The command line usage is (``hpp2plantuml --help``):
       -h, --help            show this help message and exit
       -i HEADER-FILE, --input-file HEADER-FILE
                             input file (must be quoted when using wildcards)
+      -r, --recursive       Allow to searching recursively for files in subdirectories (double asterisk should be in filepath)
       -o FILE, --output-file FILE
                             output file
       -d, --enable-dependency
@@ -75,6 +76,13 @@ For instance, the following command will generate an input file for PlantUML
     :name: usage-sh
 
     hpp2plantuml -i File_1.hpp -i "include/Helper_*.hpp" -o output.puml
+
+To allow taking files from subfolders, pass ``-r`` option with suitable filepath (double asterisk required):
+
+.. code:: sh
+    :name: usage-sh-recursive
+
+    hpp2plantuml -r -i "include/**/Helper_*.hpp" -o output.puml
 
 To customize the output PlantUML file, templates can be used (using the ``-t``
 parameter):
